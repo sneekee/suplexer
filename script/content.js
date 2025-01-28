@@ -16,7 +16,7 @@
         mutations.forEach((mutation) => {
             mutation.addedNodes.forEach((node) => {
                
-                if (node.parentElement.tagName && excludedTags.includes(node.parentElement.tagName.toLowerCase())) {
+                if (node.parentElement && node.parentElement.tagName && excludedTags.includes(node.parentElement.tagName.toLowerCase())) {
                     return;
                 }
 
