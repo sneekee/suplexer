@@ -1,0 +1,1 @@
+This does not collect any information nor does it transmit any information. This also does not execute any remote code and any settings are stored completely in your browser.
