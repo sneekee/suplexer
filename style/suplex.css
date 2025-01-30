@@ -1,0 +1,105 @@
+:root {
+    --dp: calc(1px);
+}
+
+body {
+    width: 300px;
+    margin: 0;
+    padding: 0;
+    background-color: #585858;
+    color: white;
+    font-size: calc(var(--dp)* 14);
+}
+
+header {
+    background-color: #e68538;
+    color: #323232;
+    padding: .25em 0.83em;
+    font-size: 1.5em;
+}
+
+main {
+    padding-left: clamp(calc(var(--dp)* 16), 5%, calc(var(--dp)* 16));
+    padding-right: clamp(calc(var(--dp)* 16), 5%, calc(var(--dp)* 16));
+    padding-top: calc(var(--dp)* 16);
+    padding-bottom: calc(var(--dp)* 16);
+    scrollbar-width: thin;
+}
+
+p {
+    padding: .25em;
+    margin: 0;
+}
+
+a {
+    color: #e68538;
+}
+
+fieldset {
+    border: none;
+}
+
+fieldset > div.switch {
+    position: relative;
+    display: flex;
+    height: calc(var(--dp)* 16);
+    line-height: calc(var(--dp)* 16);
+    margin-top: calc(var(--dp)* 10);
+}
+
+fieldset > div.switch > label {
+    margin-left: calc(var(--dp) * 30);
+    cursor: pointer;
+    flex-basis: 100%;
+}
+
+fieldset > div.switch > label:hover {
+    color: #38E685;
+}
+
+fieldset > div.switch > input[type="checkbox"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+fieldset > div.switch > span.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 4px;
+    left: 0;
+    right: 0;
+    bottom: 2px;
+    background-color: #ccc;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 34px;
+    width: calc(var(--dp) * 30);
+}
+
+fieldset > div.switch > span.slider:before {
+    position: absolute;
+    content: "";
+    height: calc(var(--dp)* 16);
+    width: calc(var(--dp)* 16);
+    left: 0px;
+    bottom: -2px;
+    background-color: white;
+    -webkit-transition: .4s;
+    transition: .4s;
+    border-radius: 50%;
+  }
+
+  fieldset > div.switch > input[type="checkbox"]:checked + span.slider  {
+    background-color: #e68538;
+  }
+
+  fieldset > div.switch > input[type="checkbox"]:focus + span.slider {
+    box-shadow: 0 0 1px #e68538;
+  }
+
+  fieldset > div.switch > input[type="checkbox"]:checked + span.slider:before {
+    -webkit-transform: translateX(calc(var(--dp) * 14) );
+    -ms-transform: translateX(calc(var(--dp) * 14));
+    transform: translateX(calc(var(--dp) * 14));
+  }
