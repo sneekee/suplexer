@@ -1,45 +1,58 @@
-(function(){
-    let excludedHosts = [];
+(async (namespace) => {
 
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-        if (tabs.length > 0) {
-          const url = new URL(tabs[0].url);
-          const host = url.hostname;
-          
-          chrome.storage.local.get(['replacements', "exclusions"], function(result) {
-            if (result.exclusions !== undefined){
-                excludedHosts = result.exclusions;
-            }
-    
-            const chkEnabled = document.getElementById('chkEnabled');
-            const slider = document.getElementById('sldEnable');
-    
-            chkEnabled.checked = !excludedHosts.includes(host);
-    
-            slider.addEventListener('click', () => {
-                chkEnabled.checked = !chkEnabled.checked;
-            });
+  await namespace.loadSettings();
 
-            chkEnabled.addEventListener('change', function() {
-    
-                if (chkEnabled.checked) {
-                    excludedHosts = excludedHosts.filter(item => item !== host);
-                } else {
-                    excludedHosts.push(host);
-                }
-    
-                chrome.storage.local.set({ 'exclusions': excludedHosts });
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tabs.length === 0) return;
 
-                chrome.tabs.sendMessage(tabs[0].id, { action: "reload-suplexer" }, (response) => {
-                    if (response && response.success) {
-                      console.log("Toggled");
-                    }
-                  });
-            });
-            });
-          
+  const url = new URL(tabs[0].url);
+  const host = url.hostname;
+
+  const chkEnabled = document.getElementById('chkEnabled');
+  chkEnabled.checked = namespace.settings.enabledForHost;
+  
+  const chkMatchCase = document.getElementById('chkMatchCase');
+  chkMatchCase.checked = namespace.settings.matchCase;
+
+  chkEnabled.addEventListener('change', async function() {
+    {
+
+      if (chkEnabled.checked) {
+        namespace.settings.excludedHosts = namespace.settings.excludedHosts.filter(item => item !== host);
+      } else {
+        namespace.settings.excludedHosts.push(host);
+      }
+  
+      await namespace.saveSettings();
+      await namespace.loadSettings();
+  
+      try {
+        const response = await chrome.tabs.sendMessage(tabs[0].id, { action: chkEnabled.checked ? "suplexer-enable" : "suplexer-disable" });
+        if (response && response.success) {
+          console.log("Toggled Suplexer.");
         }
-      });
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
+    }
+  });
 
-    
-})()
+  chkMatchCase.addEventListener('change', async function() {
+    {
+      namespace.settings.matchCase = chkMatchCase.checked;
+  
+      await namespace.saveSettings();
+      await namespace.loadSettings();
+  
+      try {
+        const response = await chrome.tabs.sendMessage(tabs[0].id, { action: "suplexer-reload" });
+        if (response && response.success) {
+          console.log("Toggled Suplexer.");
+        }
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
+    }
+  });
+
+})(window.suplexer = window.suplexer || {});
