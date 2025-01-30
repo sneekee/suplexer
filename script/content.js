@@ -8,6 +8,7 @@
     };
 
     let replacements = null;
+    let excludedHosts = [];
 
     const textNodes = [];
     let currentIndex = 0;
@@ -30,10 +31,12 @@
         });
     });
    
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true,
-    });
+    const observ = () => {
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+        });
+    };
 
     const findInstances = (rootNode) => {
         if (!rootNode) return;
@@ -71,14 +74,19 @@
             const node = textNodes[currentIndex];
 
             for(let key in replacements){
-                const regex = new RegExp("\\b" + key + "\\b", 'gi');
-                node.textContent = node.textContent.replace(regex, (match) => {
-                    return matchCase(match, replacements[key]);
-                })
+                    const regex = new RegExp("\\b" + key + "\\b", 'gi');
+                    node.textContent = node.textContent.replace(regex, (match) => {
+                        const replacement = matchCase(match, replacements[key])
+                        node.match = match;
+                        node.replacement = replacement;
+
+                        return replacement;
+                    })
             }
 
             currentIndex++;
             requestAnimationFrame(replaceInstances);
+
         }
     };
 
@@ -91,7 +99,7 @@
 
             if (sourceChar === sourceChar.toUpperCase()) {
                 result += targetChar.toUpperCase();
-            } else {
+            } else if (sourceChar === sourceChar.toLowerCase()) {
                 result += targetChar.toLowerCase();
             }
         }
@@ -105,7 +113,20 @@
 
     const load = () => {
 
-        chrome.storage.local.get(['replacements'], function(result) {
+        const url = new URL(window.location.href);
+        const host = url.hostname;
+
+        chrome.storage.local.get(['replacements', "exclusions"], function(result) {
+            if (result.exclusions !== undefined){
+                excludedHosts = result.exclusions;
+            }
+
+            if (excludedHosts.includes(host)){
+                return;
+            }
+
+            observ();
+
             if (result.replacements !== undefined) {
                 replacements = result.replacements;
             } else {
@@ -118,9 +139,37 @@
                 requestAnimationFrame(replaceInstances);
             });
         });
-
-       
     }
+
+    const reverse = () => {
+        if (currentIndex >= 0){
+            const node = textNodes[currentIndex];            
+            if (node){
+                const regex = new RegExp("\\b" + node.replacement + "\\b", 'gi');
+                node.textContent = node.textContent.replace(regex, (match) => {
+                    console.log(`replaceing '${node.replacement}' with '${node.match}'`)
+                    return node.match;
+                });
+            }
+
+            currentIndex--;
+            requestAnimationFrame(reverse);
+        }
+    }
+
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+        if (message.action === "reload-suplexer") {
+            if (currentIndex > 0) {
+                observer.disconnect();
+                currentIndex = textNodes.length - 1;
+                reverse();
+            } else {
+                observ();
+                load();
+            }
+            sendResponse({ success: true });
+        }
+    });
 
     load();
 })()
