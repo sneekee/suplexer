@@ -1,18 +1,23 @@
 <html>
 <head>
     <link rel="stylesheet" href="style/suplex.css">
+    <script src="script/settings.js"></script>
     <script src="script/ui.js"></script>
 </head>
 <body>
     <header>
-        Suplexer
+        <img src="img/suplex-16.png">
+        <h1>Suplexer</h1>
     </header>
     <section>
         <fieldset>
             <div class="switch">
-                <input type="checkbox" id="chkEnabled">
-                <span id="sldEnable" class="slider"></span>
+                <input type="checkbox" id="chkEnabled" />
                 <label for="chkEnabled">Enabled for site?</label>
+            </div>
+            <div class="switch">
+                <input type="checkbox" id="chkMatchCase" />
+                <label for="chkMatchCase">Attempt to match case?</label>
             </div>
         </fieldset>
     </section>
@@ -21,11 +26,10 @@
             Make your browsing experience AWESOME by replacing all instances of Slam, Slams, and Slammed with the more
             appropriate Suplex, Suplexes, and Suplexed.
         </p>
-        <p>
-            <a href="https://www.flaticon.com/free-icons/wrestler" title="wrestler icons" target="_blank">Wrestler icons created by
-                photo3idea_studio - Flaticon</a>
-        </p>
     </main>
+    <footer>
+        <a href="https://www.flaticon.com/free-icons/wrestler" title="wrestler icons" target="_blank" rel="external">Wrestler icons created by photo3idea_studio - Flaticon</a>
+    </footer>
 </body>
 
 </html>

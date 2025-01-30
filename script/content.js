@@ -1,14 +1,5 @@
-(function(){
+((namespace) => {
     const excludedTags = ['script', 'style', 'iframe', 'noscript', 'input', 'textarea'];
-
-    const defaultReplacements = {
-        "slammed": "suplexed",
-        "slams": "suplexes",
-        "slam": "suplex",
-    };
-
-    let replacements = null;
-    let excludedHosts = [];
 
     const textNodes = [];
     let currentIndex = 0;
@@ -51,7 +42,7 @@
                     ) {
                         return NodeFilter.FILTER_REJECT;
                     }
-                    for(let key in replacements){
+                    for(let key in namespace.settings.replacements){
                         if (node.nodeValue.toLowerCase().includes(key.toLowerCase())) {
                             return NodeFilter.FILTER_ACCEPT;
                         }
@@ -72,18 +63,18 @@
 
         if (currentIndex < textNodes.length){
             const node = textNodes[currentIndex];
-
-            for(let key in replacements){
-                    const regex = new RegExp("\\b" + key + "\\b", 'gi');
-                    node.textContent = node.textContent.replace(regex, (match) => {
-                        const replacement = matchCase(match, replacements[key])
-                        node.match = match;
-                        node.replacement = replacement;
-
-                        return replacement;
-                    })
+            if (node.textContent){
+                for(let key in namespace.settings.replacements){
+                        const regex = new RegExp("\\b" + key + "\\b", 'gi');
+                        node.textContent = node.textContent.replace(regex, (match) => {
+                            const replacement = namespace.settings.matchCase ? matchCase(match, namespace.settings.replacements[key]) : namespace.settings.replacements[key];
+                            node.match = match;
+                            node.replacement = replacement;
+    
+                            return replacement;
+                        })
+                }
             }
-
             currentIndex++;
             requestAnimationFrame(replaceInstances);
 
@@ -111,33 +102,22 @@
         return result;
     };
 
-    const load = () => {
-
+    const load = async () => {
         const url = new URL(window.location.href);
         const host = url.hostname;
 
-        chrome.storage.local.get(['replacements', "exclusions"], function(result) {
-            if (result.exclusions !== undefined){
-                excludedHosts = result.exclusions;
-            }
+        await namespace.loadSettings();
 
-            if (excludedHosts.includes(host)){
-                return;
-            }
+        if (!namespace.settings.enabledForHost){
+            return;
+        }
 
-            observ();
-
-            if (result.replacements !== undefined) {
-                replacements = result.replacements;
-            } else {
-                replacements = defaultReplacements;
-                chrome.storage.local.set({ 'replacements': replacements });
-            }
-
-            requestAnimationFrame(() => {
-                findInstances(document.body);
-                requestAnimationFrame(replaceInstances);
-            });
+        currentIndex = 0;
+        
+        observ();
+        requestAnimationFrame(() => {
+            findInstances(document.body);
+            requestAnimationFrame(replaceInstances);
         });
     }
 
@@ -147,7 +127,6 @@
             if (node){
                 const regex = new RegExp("\\b" + node.replacement + "\\b", 'gi');
                 node.textContent = node.textContent.replace(regex, (match) => {
-                    console.log(`replaceing '${node.replacement}' with '${node.match}'`)
                     return node.match;
                 });
             }
@@ -157,19 +136,40 @@
         }
     }
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-        if (message.action === "reload-suplexer") {
-            if (currentIndex > 0) {
+    chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+
+        switch(message.action){
+            case 'suplexer-enable':
+                await namespace.loadSettings();
+                load();
+                break;
+            case 'suplexer-disable':
                 observer.disconnect();
                 currentIndex = textNodes.length - 1;
                 reverse();
-            } else {
-                observ();
+                break;
+            case 'suplexer-reload':
+                observer.disconnect();
+                currentIndex = textNodes.length - 1;
+                while (currentIndex >= 0){
+                    const node = textNodes[currentIndex];            
+                    if (node){
+                        const regex = new RegExp("\\b" + node.replacement + "\\b", 'gi');
+                        node.textContent = node.textContent.replace(regex, (match) => {
+                            return node.match;
+                        });
+                    }
+                    
+                    currentIndex--;
+                }
+
+                await namespace.loadSettings();
                 load();
-            }
-            sendResponse({ success: true });
+                break;
         }
+
+        sendResponse({ success: true });
     });
 
     load();
-})()
+})(window.suplexer = window.suplexer || {});
