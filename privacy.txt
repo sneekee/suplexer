@@ -1,1 +1,12 @@
-This does not collect any information nor does it transmit any information. This also does not execute any remote code and any settings are stored completely in your browser.
+We are committed to ensuring that your data remains private and secure. Below is an outline of our privacy practices:
+
+No Data Collection or Transmission
+We do not collect, store, or transmit any data. Any information you interact with while using the extension is processed and stored solely on your device.
+
+Local Storage Only
+All data used by the extension is stored locally in your browser. No information is sent to our servers, or shared with any third parties. Your data remains private and is never transmitted externally.
+
+No External Code
+Our extension does not rely on any external code or services. This means there is no risk of third parties injecting code into the extension to collect or access your data.
+
+We are committed to providing a safe and secure experience, ensuring that your data is not shared or compromised in any way. If you have any questions or concerns, feel free to contact us.
