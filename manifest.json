@@ -20,5 +20,5 @@
           "run_at": "document_idle"
         }
     ],
-    "permissions": ["tabs", "activeTab", "storage", "scripting"]
+    "permissions": ["tabs", "storage"]
   }
